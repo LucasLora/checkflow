@@ -1,0 +1,24 @@
+name: checkflow
+description: >
+  A lightweight and modular checklist manager for mobile.
+  Allows creating structured checklists, attaching photos to each item,
+  and exporting the entire flow for desktop report generation.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.1.0
+
+flutter:
+  uses-material-design: true
