@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:checkflow/features/checklists/presentation/checklist_detail_page.dart';
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,11 +32,16 @@ class ChecklistListPage extends ConsumerWidget {
                 child: ListTile(
                   title: Text(checklist.title),
                   subtitle: Text(
-                    'Criado em: ${checklist.createdAt.toLocal().toString().split('.')[0]}',
+                    'Criado em: ${checklist.createdAt.toLocal().toString().split('.').first}',
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    // TODO(lucaslora): navigate to details
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            ChecklistDetailPage(checklistId: checklist.id),
+                      ),
+                    );
                   },
                 ),
               );
