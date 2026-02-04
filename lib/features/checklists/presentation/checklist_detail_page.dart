@@ -106,8 +106,22 @@ class _ChecklistHeader extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Delete checklist
+                onPressed: () async {
+                  final confirm = await _showDeleteConfirmationDialog(context);
+
+                  if (confirm != true) return;
+
+                  await ref
+                      .read(checklistDetailProvider(checklist.id).notifier)
+                      .deleteChecklist();
+
+                  ref
+                      .read(checklistListProvider.notifier)
+                      .removeChecklist(checklist.id);
+
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
                 },
                 icon: const Icon(Icons.delete),
                 label: const Text('Excluir'),
@@ -161,6 +175,35 @@ Future<String?> _showEditChecklistDialog(
               }
             },
             child: const Text('Salvar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Excluir checklist'),
+        content: const Text(
+          'Tem certeza que deseja excluir este checklist?\n'
+          'Essa ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Excluir'),
           ),
         ],
       );

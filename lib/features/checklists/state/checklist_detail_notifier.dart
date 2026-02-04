@@ -54,4 +54,12 @@ class ChecklistDetailNotifier
       ),
     );
   }
+
+  Future<void> deleteChecklist() async {
+    final checklistId = state.value?.checklist.id;
+
+    if (checklistId == null) return;
+
+    await _checklistRepository.delete(checklistId);
+  }
 }

@@ -45,4 +45,25 @@ class ChecklistRepository {
           ..where((tbl) => tbl.id.equals(checklistId)))
         .write(ChecklistsCompanion(title: Value(newTitle)));
   }
+
+  Future<void> delete(int checklistId) async {
+    await db.transaction(() async {
+      await (db.delete(db.photos)..where(
+            (tbl) => tbl.itemId.isInQuery(
+              db.selectOnly(db.items)
+                ..addColumns([db.items.id])
+                ..where(db.items.checklistId.equals(checklistId)),
+            ),
+          ))
+          .go();
+
+      await (db.delete(
+        db.items,
+      )..where((tbl) => tbl.checklistId.equals(checklistId))).go();
+
+      await (db.delete(
+        db.checklists,
+      )..where((tbl) => tbl.id.equals(checklistId))).go();
+    });
+  }
 }

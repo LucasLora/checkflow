@@ -42,4 +42,14 @@ class ChecklistNotifier extends AsyncNotifier<List<Checklist>> {
 
     state = AsyncData(updatedList);
   }
+
+  void removeChecklist(int checklistId) {
+    final current = state.value;
+
+    if (current == null) return;
+
+    final updatedList = current.where((c) => c.id != checklistId).toList();
+
+    state = AsyncData(updatedList);
+  }
 }
