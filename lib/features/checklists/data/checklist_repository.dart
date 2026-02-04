@@ -39,4 +39,10 @@ class ChecklistRepository {
       db.checklists,
     )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
+
+  Future<void> updateTitle(int checklistId, String newTitle) {
+    return (db.update(db.checklists)
+          ..where((tbl) => tbl.id.equals(checklistId)))
+        .write(ChecklistsCompanion(title: Value(newTitle)));
+  }
 }

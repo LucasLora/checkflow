@@ -1,5 +1,6 @@
 import 'package:checkflow/core/database/app_database.dart';
 import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
+import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -62,13 +63,13 @@ class ChecklistDetailPage extends ConsumerWidget {
   }
 }
 
-class _ChecklistHeader extends StatelessWidget {
+class _ChecklistHeader extends ConsumerWidget {
   final Checklist checklist;
 
   const _ChecklistHeader({required this.checklist});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -84,8 +85,21 @@ class _ChecklistHeader extends StatelessWidget {
           Row(
             children: [
               OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Edit title
+                onPressed: () async {
+                  final newTitle = await _showEditChecklistDialog(
+                    context,
+                    checklist.title,
+                  );
+
+                  if (newTitle != null && newTitle.isNotEmpty) {
+                    await ref
+                        .read(checklistDetailProvider(checklist.id).notifier)
+                        .updateTitle(newTitle);
+
+                    ref
+                        .read(checklistListProvider.notifier)
+                        .updateChecklistTitle(checklist.id, newTitle);
+                  }
                 },
                 icon: const Icon(Icons.edit),
                 label: const Text('Editar'),
@@ -112,4 +126,44 @@ class _ChecklistHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<String?> _showEditChecklistDialog(
+  BuildContext context,
+  String currentTitle,
+) {
+  final controller = TextEditingController(text: currentTitle);
+
+  return showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Editar checklist'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Título',
+            border: OutlineInputBorder(),
+          ),
+          maxLength: 40,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                Navigator.of(context).pop(text);
+              }
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      );
+    },
+  );
 }

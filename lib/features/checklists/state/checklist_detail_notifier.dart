@@ -39,4 +39,19 @@ class ChecklistDetailNotifier
 
     return ChecklistDetailState(checklist: checklist, items: items);
   }
+
+  Future<void> updateTitle(String newTitle) async {
+    final current = state.value;
+
+    if (current == null) return;
+
+    await _checklistRepository.updateTitle(current.checklist.id, newTitle);
+
+    state = AsyncData(
+      ChecklistDetailState(
+        checklist: current.checklist.copyWith(title: newTitle),
+        items: current.items,
+      ),
+    );
+  }
 }
