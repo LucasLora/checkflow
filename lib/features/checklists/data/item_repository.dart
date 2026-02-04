@@ -1,4 +1,5 @@
 import 'package:checkflow/core/database/app_database.dart';
+import 'package:drift/drift.dart';
 
 class ItemWithStatus {
   final Item item;
@@ -13,18 +14,25 @@ class ItemRepository {
   ItemRepository(this.db);
 
   Future<List<ItemWithStatus>> getItemsByChecklist(int checklistId) async {
-    final items = await (db.select(
-      db.items,
-    )..where((tbl) => tbl.checklistId.equals(checklistId))).get();
+    final query = db.select(db.items).join([
+      leftOuterJoin(db.photos, db.photos.itemId.equalsExp(db.items.id)),
+    ])..where(db.items.checklistId.equals(checklistId));
 
-    return items
-        .map(
-          (item) => ItemWithStatus(
-            item: item,
-            hasPhotos:
-                false, // TODO(lucaslora): Join with photos to get boolean
-          ),
-        )
-        .toList();
+    final rows = await query.get();
+
+    final result = <int, ItemWithStatus>{};
+
+    for (final row in rows) {
+      final item = row.readTable(db.items);
+      final photo = row.readTableOrNull(db.photos);
+
+      result[item.id] ??= ItemWithStatus(item: item, hasPhotos: false);
+
+      if (photo != null) {
+        result[item.id] = ItemWithStatus(item: item, hasPhotos: true);
+      }
+    }
+
+    return result.values.toList();
   }
 }
