@@ -129,7 +129,7 @@ class _ChecklistHeader extends ConsumerWidget {
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: Generate ZIP
+                  // TODO(lucaslora): Generate ZIP
                 },
                 icon: const Icon(Icons.archive),
                 label: const Text('ZIP'),

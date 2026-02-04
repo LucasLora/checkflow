@@ -7,7 +7,9 @@ class ChecklistRepository {
   ChecklistRepository(this.db);
 
   Future<List<Checklist>> getAll() {
-    return db.select(db.checklists).get();
+    return (db.select(
+      db.checklists,
+    )..orderBy([(x) => OrderingTerm.desc(x.id)])).get();
   }
 
   Future<void> createChecklistWithItems(String title) async {
