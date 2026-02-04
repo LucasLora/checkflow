@@ -27,4 +27,29 @@ class ChecklistNotifier extends AsyncNotifier<List<Checklist>> {
     await _repository.createChecklistWithItems(title);
     state = AsyncData(await _repository.getAll());
   }
+
+  void updateChecklistTitle(int checklistId, String newTitle) {
+    final current = state.value;
+
+    if (current == null) return;
+
+    final updatedList = current.map((checklist) {
+      if (checklist.id == checklistId) {
+        return checklist.copyWith(title: newTitle);
+      }
+      return checklist;
+    }).toList();
+
+    state = AsyncData(updatedList);
+  }
+
+  void removeChecklist(int checklistId) {
+    final current = state.value;
+
+    if (current == null) return;
+
+    final updatedList = current.where((c) => c.id != checklistId).toList();
+
+    state = AsyncData(updatedList);
+  }
 }
