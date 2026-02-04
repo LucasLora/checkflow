@@ -33,4 +33,10 @@ class ChecklistRepository {
       });
     });
   }
+
+  Future<Checklist> getById(int id) {
+    return (db.select(
+      db.checklists,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+  }
 }
