@@ -1,4 +1,5 @@
 import 'package:checkflow/core/database/app_database.dart';
+import 'package:checkflow/features/checklists/presentation/item_photos_page.dart';
 import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,13 @@ class ChecklistDetailPage extends ConsumerWidget {
                               : Colors.red,
                         ),
                         onTap: () {
-                          // TODO(lucaslora): Open photos
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => ItemPhotosPage(
+                                itemId: itemWithStatus.item.id,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     );

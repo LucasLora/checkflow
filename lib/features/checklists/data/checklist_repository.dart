@@ -9,7 +9,7 @@ class ChecklistRepository {
   Future<List<Checklist>> getAll() {
     return (db.select(
       db.checklists,
-    )..orderBy([(x) => OrderingTerm.desc(x.id)])).get();
+    )..orderBy([(tbl) => OrderingTerm.desc(tbl.id)])).get();
   }
 
   Future<void> createChecklistWithItems(String title) async {
