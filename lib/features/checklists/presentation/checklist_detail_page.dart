@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChecklistDetailPage extends ConsumerWidget {
-  final int checklistId;
+  const ChecklistDetailPage({required this.checklistId, super.key});
 
-  const ChecklistDetailPage({super.key, required this.checklistId});
+  final int checklistId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,9 +71,9 @@ class ChecklistDetailPage extends ConsumerWidget {
 }
 
 class _ChecklistHeader extends ConsumerWidget {
-  final Checklist checklist;
-
   const _ChecklistHeader({required this.checklist});
+
+  final Checklist checklist;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

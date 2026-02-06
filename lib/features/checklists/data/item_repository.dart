@@ -2,16 +2,16 @@ import 'package:checkflow/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 
 class ItemWithStatus {
+  ItemWithStatus({required this.item, required this.hasPhotos});
+
   final Item item;
   final bool hasPhotos;
-
-  ItemWithStatus({required this.item, required this.hasPhotos});
 }
 
 class ItemRepository {
-  final AppDatabase db;
-
   ItemRepository(this.db);
+
+  final AppDatabase db;
 
   Future<List<ItemWithStatus>> getItemsByChecklist(int checklistId) async {
     final query = db.select(db.items).join([

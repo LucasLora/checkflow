@@ -2,9 +2,9 @@ import 'package:checkflow/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 
 class PhotoRepository {
-  final AppDatabase db;
-
   PhotoRepository(this.db);
+
+  final AppDatabase db;
 
   Future<List<Photo>> getPhotosByItem(int itemId) {
     return (db.select(db.photos)

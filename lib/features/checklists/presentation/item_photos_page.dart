@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ItemPhotosPage extends ConsumerWidget {
-  final int itemId;
+  const ItemPhotosPage({required this.itemId, super.key});
 
-  const ItemPhotosPage({super.key, required this.itemId});
+  final int itemId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
