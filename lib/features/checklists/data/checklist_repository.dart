@@ -2,12 +2,14 @@ import 'package:checkflow/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 
 class ChecklistRepository {
-  final AppDatabase db;
-
   ChecklistRepository(this.db);
 
+  final AppDatabase db;
+
   Future<List<Checklist>> getAll() {
-    return db.select(db.checklists).get();
+    return (db.select(
+      db.checklists,
+    )..orderBy([(tbl) => OrderingTerm.desc(tbl.id)])).get();
   }
 
   Future<void> createChecklistWithItems(String title) async {

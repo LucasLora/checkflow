@@ -17,17 +17,15 @@ class ChecklistDetailState {
   ChecklistDetailState({required this.checklist, required this.items});
 }
 
-final checklistDetailProvider =
-    AsyncNotifierProvider.family<
-      ChecklistDetailNotifier,
-      ChecklistDetailState,
-      int
-    >(ChecklistDetailNotifier.new);
+final checklistDetailProvider = AsyncNotifierProvider.autoDispose
+    .family<ChecklistDetailNotifier, ChecklistDetailState, int>(
+      ChecklistDetailNotifier.new,
+    );
 
 class ChecklistDetailNotifier
-    extends FamilyAsyncNotifier<ChecklistDetailState, int> {
-  late final ChecklistRepository _checklistRepository;
-  late final ItemRepository _itemRepository;
+    extends AutoDisposeFamilyAsyncNotifier<ChecklistDetailState, int> {
+  late ChecklistRepository _checklistRepository;
+  late ItemRepository _itemRepository;
 
   @override
   Future<ChecklistDetailState> build(int checklistId) async {

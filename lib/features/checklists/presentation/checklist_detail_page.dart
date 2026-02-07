@@ -1,13 +1,14 @@
 import 'package:checkflow/core/database/app_database.dart';
+import 'package:checkflow/features/checklists/presentation/item_photos_page.dart';
 import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChecklistDetailPage extends ConsumerWidget {
-  final int checklistId;
+  const ChecklistDetailPage({required this.checklistId, super.key});
 
-  const ChecklistDetailPage({super.key, required this.checklistId});
+  final int checklistId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +49,14 @@ class ChecklistDetailPage extends ConsumerWidget {
                               : Colors.red,
                         ),
                         onTap: () {
-                          // TODO(lucaslora): Open photos
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => ItemPhotosPage(
+                                itemId: itemWithStatus.item.id,
+                                checklistId: itemWithStatus.item.checklistId,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     );
@@ -64,9 +72,9 @@ class ChecklistDetailPage extends ConsumerWidget {
 }
 
 class _ChecklistHeader extends ConsumerWidget {
-  final Checklist checklist;
-
   const _ChecklistHeader({required this.checklist});
+
+  final Checklist checklist;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -129,7 +137,7 @@ class _ChecklistHeader extends ConsumerWidget {
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: Generate ZIP
+                  // TODO(lucaslora): Generate ZIP
                 },
                 icon: const Icon(Icons.archive),
                 label: const Text('ZIP'),
