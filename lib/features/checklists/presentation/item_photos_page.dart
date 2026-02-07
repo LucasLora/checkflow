@@ -69,23 +69,49 @@ class ItemPhotosPage extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final cameraService = ref.read(cameraServiceProvider);
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'camera',
+            onPressed: () async {
+              final imageService = ref.read(imageServiceProvider);
 
-          final path = await cameraService.takePhoto();
-          if (path == null) return;
+              final path = await imageService.takePhoto();
+              if (path == null) return;
 
-          await ref
-              .read(
-                photoNotifierProvider((
-                  itemId: itemId,
-                  checklistId: checklistId,
-                )).notifier,
-              )
-              .addPhoto(path);
-        },
-        child: const Icon(Icons.add_a_photo),
+              await ref
+                  .read(
+                    photoNotifierProvider((
+                      itemId: itemId,
+                      checklistId: checklistId,
+                    )).notifier,
+                  )
+                  .addPhoto(path);
+            },
+            child: const Icon(Icons.camera_alt),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'gallery',
+            onPressed: () async {
+              final imageService = ref.read(imageServiceProvider);
+
+              final path = await imageService.pickFromGallery();
+              if (path == null) return;
+
+              await ref
+                  .read(
+                    photoNotifierProvider((
+                      itemId: itemId,
+                      checklistId: checklistId,
+                    )).notifier,
+                  )
+                  .addPhoto(path);
+            },
+            child: const Icon(Icons.photo_library),
+          ),
+        ],
       ),
     );
   }
