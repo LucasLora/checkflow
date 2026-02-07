@@ -1,5 +1,6 @@
 import 'package:checkflow/core/database/app_database.dart';
 import 'package:checkflow/core/di/database_provider.dart';
+import 'package:checkflow/core/services/file_storage_service.dart';
 import 'package:checkflow/features/checklists/data/photo_repository.dart';
 import 'package:checkflow/features/checklists/services/image_service.dart';
 import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
@@ -12,6 +13,10 @@ final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
 
 final imageServiceProvider = Provider<ImageService>((ref) {
   return ImageService();
+});
+
+final fileStorageServiceProvider = Provider<FileStorageService>((ref) {
+  return FileStorageService();
 });
 
 final photoNotifierProvider =
@@ -54,12 +59,15 @@ class PhotoNotifier
     ref.invalidate(checklistDetailProvider(_checklistId));
   }
 
-  Future<void> deletePhoto(int photoId) async {
+  Future<void> deletePhoto(Photo photo) async {
     final current = state.value ?? [];
 
-    await _repository.deletePhoto(photoId);
+    final storage = ref.read(fileStorageServiceProvider);
 
-    state = AsyncData(current.where((p) => p.id != photoId).toList());
+    await _repository.deletePhoto(photo.id);
+    await storage.deleteFile(photo.path);
+
+    state = AsyncData(current.where((p) => p.id != photo.id).toList());
 
     ref.invalidate(checklistDetailProvider(_checklistId));
   }

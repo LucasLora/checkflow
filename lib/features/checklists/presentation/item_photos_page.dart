@@ -51,15 +51,20 @@ class ItemPhotosPage extends ConsumerWidget {
                     right: 4,
                     child: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        ref
+                      onPressed: () async {
+                        final confirm = await showDeletePhotoConfirmationDialog(
+                          context,
+                        );
+                        if (confirm != true) return;
+
+                        await ref
                             .read(
                               photoNotifierProvider((
                                 itemId: itemId,
                                 checklistId: checklistId,
                               )).notifier,
                             )
-                            .deletePhoto(photo.id);
+                            .deletePhoto(photo);
                       },
                     ),
                   ),
@@ -115,4 +120,33 @@ class ItemPhotosPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<bool?> showDeletePhotoConfirmationDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Excluir foto'),
+        content: const Text(
+          'Tem certeza que deseja excluir esta foto?\n'
+          'Essa ação não pode ser desfeita.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      );
+    },
+  );
 }
