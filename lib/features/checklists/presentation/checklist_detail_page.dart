@@ -53,6 +53,7 @@ class ChecklistDetailPage extends ConsumerWidget {
                             MaterialPageRoute<void>(
                               builder: (_) => ItemPhotosPage(
                                 itemId: itemWithStatus.item.id,
+                                checklistId: itemWithStatus.item.checklistId,
                               ),
                             ),
                           );

@@ -13,7 +13,7 @@ class PhotoRepository {
         .get();
   }
 
-  Future<void> addPhoto({required int itemId, required String path}) {
+  Future<int> addPhoto({required int itemId, required String path}) {
     return db
         .into(db.photos)
         .insert(PhotosCompanion(itemId: Value(itemId), path: Value(path)));

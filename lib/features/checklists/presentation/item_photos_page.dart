@@ -5,13 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ItemPhotosPage extends ConsumerWidget {
-  const ItemPhotosPage({required this.itemId, super.key});
+  const ItemPhotosPage({
+    required this.itemId,
+    required this.checklistId,
+    super.key,
+  });
 
   final int itemId;
+  final int checklistId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(photoNotifierProvider(itemId));
+    final state = ref.watch(
+      photoNotifierProvider((itemId: itemId, checklistId: checklistId)),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fotos')),
@@ -46,7 +53,12 @@ class ItemPhotosPage extends ConsumerWidget {
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
                         ref
-                            .read(photoNotifierProvider(itemId).notifier)
+                            .read(
+                              photoNotifierProvider((
+                                itemId: itemId,
+                                checklistId: checklistId,
+                              )).notifier,
+                            )
                             .deletePhoto(photo.id);
                       },
                     ),
@@ -58,8 +70,20 @@ class ItemPhotosPage extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO(lucaslora): abrir câmera/galeria
+        onPressed: () async {
+          final cameraService = ref.read(cameraServiceProvider);
+
+          final path = await cameraService.takePhoto();
+          if (path == null) return;
+
+          await ref
+              .read(
+                photoNotifierProvider((
+                  itemId: itemId,
+                  checklistId: checklistId,
+                )).notifier,
+              )
+              .addPhoto(path);
         },
         child: const Icon(Icons.add_a_photo),
       ),

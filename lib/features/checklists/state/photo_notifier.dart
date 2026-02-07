@@ -1,6 +1,8 @@
 import 'package:checkflow/core/database/app_database.dart';
 import 'package:checkflow/core/di/database_provider.dart';
 import 'package:checkflow/features/checklists/data/photo_repository.dart';
+import 'package:checkflow/features/checklists/services/camera_service.dart';
+import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
@@ -8,29 +10,48 @@ final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
   return PhotoRepository(db);
 });
 
-final photoNotifierProvider =
-    AsyncNotifierProvider.family<PhotoNotifier, List<Photo>, int>(
-      PhotoNotifier.new,
-    );
+final cameraServiceProvider = Provider<CameraService>((ref) {
+  return CameraService();
+});
 
-class PhotoNotifier extends FamilyAsyncNotifier<List<Photo>, int> {
+final photoNotifierProvider =
+    AsyncNotifierProvider.family<
+      PhotoNotifier,
+      List<Photo>,
+      ({int itemId, int checklistId})
+    >(PhotoNotifier.new);
+
+class PhotoNotifier
+    extends FamilyAsyncNotifier<List<Photo>, ({int itemId, int checklistId})> {
   late final PhotoRepository _repository;
   late final int _itemId;
+  late final int _checklistId;
 
   @override
-  Future<List<Photo>> build(int itemId) async {
-    _itemId = itemId;
+  Future<List<Photo>> build(({int itemId, int checklistId}) args) async {
+    _itemId = args.itemId;
+    _checklistId = args.checklistId;
     _repository = ref.read(photoRepositoryProvider);
 
-    return _repository.getPhotosByItem(itemId);
+    return _repository.getPhotosByItem(_itemId);
   }
 
   Future<void> addPhoto(String path) async {
-    state = const AsyncLoading();
+    final current = state.value ?? [];
 
-    await _repository.addPhoto(itemId: _itemId, path: path);
+    final photoId = await _repository.addPhoto(itemId: _itemId, path: path);
 
-    state = AsyncData(await _repository.getPhotosByItem(_itemId));
+    state = AsyncData([
+      Photo(
+        id: photoId,
+        itemId: _itemId,
+        path: path,
+        attachedAt: DateTime.now(),
+      ),
+      ...current,
+    ]);
+
+    ref.invalidate(checklistDetailProvider(_checklistId));
   }
 
   Future<void> deletePhoto(int photoId) async {
@@ -39,5 +60,7 @@ class PhotoNotifier extends FamilyAsyncNotifier<List<Photo>, int> {
     await _repository.deletePhoto(photoId);
 
     state = AsyncData(current.where((p) => p.id != photoId).toList());
+
+    ref.invalidate(checklistDetailProvider(_checklistId));
   }
 }
