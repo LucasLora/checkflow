@@ -1,33 +1,104 @@
-# 📘 **CheckFlow**
+# 📘 CheckFlow
 
-CheckFlow é um aplicativo Flutter focado em gerenciamento simples e modular de checklists.
-
-Ele permite:
-
-- Criar diversos checklists
-- Visualizar cada checklist com seus itens predefinidos
-- Anexar fotos diretamente em cada item
-- Exportar tudo em um **arquivo ZIP**, contendo as imagens e os metadados necessários
-
-Esse ZIP pode ser processado pelo **CheckFlow Reports** (aplicação desktop) para gerar relatórios completos e profissionais a partir dos dados coletados no app.
+CheckFlow é um aplicativo mobile desenvolvido em **Flutter**, focado na **coleta de dados em campo por meio de checklists**, com suporte a **registro fotográfico por item** e **exportação estruturada para desktop**.
 
 ---
 
-## 🧱 Status do Projeto
+## ✨ Funcionalidades
 
-Este repositório contém apenas a **base inicial** do aplicativo mobile, sem features extras ou lógica de negócio avançada.  
-A geração de relatórios/PDF será feita exclusivamente no aplicativo desktop.
+Atualmente, o CheckFlow permite:
+
+- Criar e gerenciar **checklists**
+- Gerar automaticamente os **itens do checklist** a partir de um template inicial
+- Visualizar os itens de cada checklist com **indicador visual de status**
+- Anexar **fotos por item**, utilizando:
+  - Câmera
+  - Galeria
+- Exportar os dados coletados em um **arquivo ZIP**
+
+O arquivo ZIP gerado será utilizado pelo **CheckFlow Reports** (aplicação desktop) para processamento, análise e geração de relatórios.
 
 ---
 
-## 🚀 Tecnologias Principais
+## 🧱 Escopo do Projeto
 
-- **Flutter** (somente Android no início)
+Este repositório contém **exclusivamente o aplicativo mobile** do CheckFlow.
+
+- ❌ Não gera relatórios ou PDFs
+- ❌ Não possui sincronização em nuvem
+- ❌ Não possui autenticação
+
+Toda a **interpretação dos dados, geração de relatórios e PDFs** será responsabilidade do aplicativo desktop (**CheckFlow Reports**).
+
+O foco aqui é:
+
+> **coleta confiável de dados em campo, offline, com evidências fotográficas.**
+
+---
+
+## 🏗️ Arquitetura
+
+O projeto foi estruturado com foco em **clareza, manutenção e separação de responsabilidades**.
+
+#### 📂 Organização por feature
+
+```text
+lib/
+├── core/
+│   ├── database/         # Drift + SQLite
+│   ├── di/               # Providers globais
+│   └── services/         # Serviços genéricos (ex: file storage)
+│
+└── features/
+    └── checklists/
+        ├── data/         # Repositórios
+        ├── state/        # Notifiers (Riverpod)
+        ├── presentation/ # Telas
+        └── services/     # Serviços específicos da feature
+```
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Flutter**
 - **Dart**
-- Arquitetura e layout ainda em definição conforme o desenvolvimento avançar
+- **Drift (SQLite)**
+- **Riverpod**
+- **image_picker**
+- **path_provider**
+
+---
+
+## 📱 Plataforma
+
+- ✅ Android (inicialmente)
+- ⏳ iOS (possivelmente no futuro)
+
+O aplicativo opera **somente em modo portrait**, visando melhor usabilidade em campo.
+
+---
+
+## 📦 Exportação de Dados
+
+O CheckFlow exporta os dados coletados em um **arquivo ZIP**, contendo:
+
+- Estrutura organizada por checklist
+- Fotos associadas a cada item
+- Metadados necessários para processamento posterior
+
+Esse ZIP é consumido pelo projeto **CheckFlow Reports**, responsável por gerar relatórios finais.
 
 ---
 
 ## 🎯 Objetivo
 
-Fornecer uma ferramenta simples e prática para coleta de dados em campo, com possibilidade de anexar evidências (fotos) e exportar tudo para análise posterior no desktop.
+Fornecer uma ferramenta:
+
+- simples
+- rápida
+- confiável
+- offline
+
+para **coleta estruturada de dados e evidências em campo**, permitindo análise posterior em ambiente desktop.
+
