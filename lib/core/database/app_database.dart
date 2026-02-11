@@ -1,3 +1,4 @@
+import 'package:checkflow/core/database/migrations/migration_strategy.dart';
 import 'package:checkflow/core/database/tables/checklists.dart';
 import 'package:checkflow/core/database/tables/items.dart';
 import 'package:checkflow/core/database/tables/photos.dart';
@@ -15,4 +16,7 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => buildMigrationStrategy(this);
 }
