@@ -22,22 +22,19 @@ class ChecklistZipService {
 
   Future<String> generateZip(int checklistId) async {
     final checklist = await checklistRepository.getById(checklistId);
-    final items = await itemRepository.getItemsByChecklist(checklistId);
+    final items = await itemRepository.getItemsWithPhotosByChecklist(
+      checklistId,
+    );
 
     final archive = Archive();
 
     final List<Map<String, Object>> itemsMetadata = [];
-    final Map<String, Object> metadata = {
-      'checklistId': checklist.id,
-      'title': checklist.title,
-      'createdAt': checklist.createdAt.toIso8601String(),
-      'items': itemsMetadata,
-    };
 
-    for (final item in items) {
-      final photoList = [];
+    for (final itemWithPhotos in items) {
+      final item = itemWithPhotos.item;
+      final photos = itemWithPhotos.photos;
 
-      final photos = await photoRepository.getPhotosByItem(item.id);
+      final List<Map<String, Object>> photoList = [];
 
       for (final photo in photos) {
         final extension = p.extension(photo.path);
@@ -69,6 +66,13 @@ class ChecklistZipService {
         'photos': photoList,
       });
     }
+
+    final Map<String, Object> metadata = {
+      'checklistId': checklist.id,
+      'title': checklist.title,
+      'createdAt': checklist.createdAt.toIso8601String(),
+      'items': itemsMetadata,
+    };
 
     final metadataJson = const JsonEncoder.withIndent('  ').convert(metadata);
     final metadataBytes = utf8.encode(metadataJson);

@@ -5,7 +5,14 @@ class ItemWithStatus {
   ItemWithStatus({required this.item, required this.hasPhotos});
 
   final Item item;
-  final bool hasPhotos;
+  bool hasPhotos;
+}
+
+class ItemWithPhotos {
+  ItemWithPhotos({required this.item, required this.photos});
+
+  final Item item;
+  final List<Photo> photos;
 }
 
 class ItemRepository {
@@ -28,19 +35,41 @@ class ItemRepository {
       final item = row.readTable(db.items);
       final photo = row.readTableOrNull(db.photos);
 
-      result[item.id] ??= ItemWithStatus(item: item, hasPhotos: false);
+      result.putIfAbsent(
+        item.id,
+        () => ItemWithStatus(item: item, hasPhotos: false),
+      );
 
       if (photo != null) {
-        result[item.id] = ItemWithStatus(item: item, hasPhotos: true);
+        result[item.id]!.hasPhotos = true;
       }
     }
 
     return result.values.toList();
   }
 
-  Future<List<Item>> getItemsByChecklist(int checklistId) {
-    return (db.select(
-      db.items,
-    )..where((tbl) => tbl.checklistId.equals(checklistId))).get();
+  Future<List<ItemWithPhotos>> getItemsWithPhotosByChecklist(
+    int checklistId,
+  ) async {
+    final query = db.select(db.items).join([
+      leftOuterJoin(db.photos, db.photos.itemId.equalsExp(db.items.id)),
+    ])..where(db.items.checklistId.equals(checklistId));
+
+    final rows = await query.get();
+
+    final result = <int, ItemWithPhotos>{};
+
+    for (final row in rows) {
+      final item = row.readTable(db.items);
+      final photo = row.readTableOrNull(db.photos);
+
+      result.putIfAbsent(item.id, () => ItemWithPhotos(item: item, photos: []));
+
+      if (photo != null) {
+        result[item.id]!.photos.add(photo);
+      }
+    }
+
+    return result.values.toList();
   }
 }
