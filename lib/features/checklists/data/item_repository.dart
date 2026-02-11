@@ -13,7 +13,9 @@ class ItemRepository {
 
   final AppDatabase db;
 
-  Future<List<ItemWithStatus>> getItemsByChecklist(int checklistId) async {
+  Future<List<ItemWithStatus>> getItemsWithStatusByChecklist(
+    int checklistId,
+  ) async {
     final query = db.select(db.items).join([
       leftOuterJoin(db.photos, db.photos.itemId.equalsExp(db.items.id)),
     ])..where(db.items.checklistId.equals(checklistId));
@@ -34,5 +36,11 @@ class ItemRepository {
     }
 
     return result.values.toList();
+  }
+
+  Future<List<Item>> getItemsByChecklist(int checklistId) {
+    return (db.select(
+      db.items,
+    )..where((tbl) => tbl.checklistId.equals(checklistId))).get();
   }
 }

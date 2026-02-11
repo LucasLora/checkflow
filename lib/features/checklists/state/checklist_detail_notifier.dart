@@ -33,7 +33,9 @@ class ChecklistDetailNotifier
     _itemRepository = ref.read(itemRepositoryProvider);
 
     final checklist = await _checklistRepository.getById(checklistId);
-    final items = await _itemRepository.getItemsByChecklist(checklistId);
+    final items = await _itemRepository.getItemsWithStatusByChecklist(
+      checklistId,
+    );
 
     return ChecklistDetailState(checklist: checklist, items: items);
   }
