@@ -136,8 +136,43 @@ class _ChecklistHeader extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () {
-                  // TODO(lucaslora): Generate ZIP
+                onPressed: () async {
+                  final notifier = ref.read(
+                    checklistDetailProvider(checklist.id).notifier,
+                  );
+
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) =>
+                        const Center(child: CircularProgressIndicator()),
+                  );
+
+                  try {
+                    final path = await notifier.exportZip();
+
+                    if (!context.mounted) return;
+
+                    Navigator.of(context).pop();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('ZIP salvo em:\n$path'),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+
+                    Navigator.of(context).pop();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao gerar ZIP:\n${e.toString()}'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.archive),
                 label: const Text('ZIP'),
@@ -207,8 +242,8 @@ Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Excluir'),

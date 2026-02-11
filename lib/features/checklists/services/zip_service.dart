@@ -7,17 +7,14 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:checkflow/features/checklists/data/checklist_repository.dart';
 import 'package:checkflow/features/checklists/data/item_repository.dart';
-import 'package:checkflow/features/checklists/data/photo_repository.dart';
 
 class ChecklistZipService {
   final ChecklistRepository checklistRepository;
   final ItemRepository itemRepository;
-  final PhotoRepository photoRepository;
 
   ChecklistZipService({
     required this.checklistRepository,
     required this.itemRepository,
-    required this.photoRepository,
   });
 
   Future<String> generateZip(int checklistId) async {

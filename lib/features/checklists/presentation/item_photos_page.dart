@@ -50,7 +50,10 @@ class ItemPhotosPage extends ConsumerWidget {
                     top: 4,
                     right: 4,
                     child: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(
+                        Icons.delete,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                       onPressed: () async {
                         final confirm = await showDeletePhotoConfirmationDialog(
                           context,
@@ -139,8 +142,8 @@ Future<bool?> showDeletePhotoConfirmationDialog(BuildContext context) {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Excluir'),
