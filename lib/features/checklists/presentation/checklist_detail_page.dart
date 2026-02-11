@@ -5,79 +5,174 @@ import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ChecklistDetailPage extends ConsumerWidget {
+class ChecklistDetailPage extends ConsumerStatefulWidget {
   const ChecklistDetailPage({required this.checklistId, super.key});
 
   final int checklistId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(checklistDetailProvider(checklistId));
+  ConsumerState<ChecklistDetailPage> createState() =>
+      _ChecklistDetailPageState();
+}
+
+class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
+  bool _isExporting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(checklistDetailProvider(widget.checklistId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checklist')),
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
-        data: (data) {
-          final checklist = data.checklist;
-          final items = data.items;
+      body: Stack(
+        children: [
+          state.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => Center(child: Text('Erro: $error')),
+            data: (data) => _buildContent(data),
+          ),
+          if (_isExporting)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withAlpha(102),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _ChecklistHeader(checklist: checklist),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final itemWithStatus = items[index];
+  Column _buildContent(ChecklistDetailState data) {
+    final checklist = data.checklist;
+    final items = data.items;
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: ListTile(
-                        title: Text(itemWithStatus.item.title),
-                        trailing: Icon(
-                          Icons.circle,
-                          size: 12,
-                          color: itemWithStatus.hasPhotos
-                              ? Colors.green
-                              : Colors.red,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ChecklistHeader(
+          checklist: checklist,
+          onEdit: () async => await _handleEdit(checklist),
+          onDelete: () async => await _handleDelete(checklist),
+          onExport: () async => await _handleExport(checklist),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final itemWithStatus = items[index];
+
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  title: Text(itemWithStatus.item.title),
+                  trailing: Icon(
+                    Icons.circle,
+                    size: 12,
+                    color: itemWithStatus.hasPhotos ? Colors.green : Colors.red,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ItemPhotosPage(
+                          itemId: itemWithStatus.item.id,
+                          checklistId: itemWithStatus.item.checklistId,
                         ),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => ItemPhotosPage(
-                                itemId: itemWithStatus.item.id,
-                                checklistId: itemWithStatus.item.checklistId,
-                              ),
-                            ),
-                          );
-                        },
                       ),
                     );
                   },
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+      ],
     );
+  }
+
+  Future<void> _handleEdit(Checklist checklist) async {
+    final newTitle = await _showEditChecklistDialog(context, checklist.title);
+
+    if (newTitle != null && newTitle.isNotEmpty) {
+      await ref
+          .read(checklistDetailProvider(checklist.id).notifier)
+          .updateTitle(newTitle);
+
+      ref
+          .read(checklistListProvider.notifier)
+          .updateChecklistTitle(checklist.id, newTitle);
+    }
+  }
+
+  Future<void> _handleDelete(Checklist checklist) async {
+    final confirm = await _showDeleteConfirmationDialog(context);
+
+    if (confirm != true) return;
+
+    await ref
+        .read(checklistDetailProvider(checklist.id).notifier)
+        .deleteChecklist();
+
+    ref.read(checklistListProvider.notifier).removeChecklist(checklist.id);
+
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _handleExport(Checklist checklist) async {
+    if (_isExporting) return;
+
+    setState(() => _isExporting = true);
+
+    try {
+      final path = await ref
+          .read(checklistDetailProvider(checklist.id).notifier)
+          .exportZip();
+
+      await Future.delayed(const Duration(seconds: 5));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ZIP salvo em:\n$path'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao gerar ZIP:\n$e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
   }
 }
 
-class _ChecklistHeader extends ConsumerWidget {
-  const _ChecklistHeader({required this.checklist});
+class _ChecklistHeader extends StatelessWidget {
+  const _ChecklistHeader({
+    required this.checklist,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onExport,
+  });
 
   final Checklist checklist;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onExport;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -93,87 +188,19 @@ class _ChecklistHeader extends ConsumerWidget {
           Row(
             children: [
               OutlinedButton.icon(
-                onPressed: () async {
-                  final newTitle = await _showEditChecklistDialog(
-                    context,
-                    checklist.title,
-                  );
-
-                  if (newTitle != null && newTitle.isNotEmpty) {
-                    await ref
-                        .read(checklistDetailProvider(checklist.id).notifier)
-                        .updateTitle(newTitle);
-
-                    ref
-                        .read(checklistListProvider.notifier)
-                        .updateChecklistTitle(checklist.id, newTitle);
-                  }
-                },
+                onPressed: onEdit,
                 icon: const Icon(Icons.edit),
                 label: const Text('Editar'),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () async {
-                  final confirm = await _showDeleteConfirmationDialog(context);
-
-                  if (confirm != true) return;
-
-                  await ref
-                      .read(checklistDetailProvider(checklist.id).notifier)
-                      .deleteChecklist();
-
-                  ref
-                      .read(checklistListProvider.notifier)
-                      .removeChecklist(checklist.id);
-
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                },
+                onPressed: onDelete,
                 icon: const Icon(Icons.delete),
                 label: const Text('Excluir'),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () async {
-                  final notifier = ref.read(
-                    checklistDetailProvider(checklist.id).notifier,
-                  );
-
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) =>
-                        const Center(child: CircularProgressIndicator()),
-                  );
-
-                  try {
-                    final path = await notifier.exportZip();
-
-                    if (!context.mounted) return;
-
-                    Navigator.of(context).pop();
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('ZIP salvo em:\n$path'),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                    );
-                  } catch (e) {
-                    if (!context.mounted) return;
-
-                    Navigator.of(context).pop();
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Erro ao gerar ZIP:\n${e.toString()}'),
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                  }
-                },
+                onPressed: onExport,
                 icon: const Icon(Icons.archive),
                 label: const Text('ZIP'),
               ),
