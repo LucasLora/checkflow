@@ -73,7 +73,7 @@ class ChecklistDetailNotifier
     await _checklistRepository.delete(checklistId);
   }
 
-  Future<String> exportZip() async {
+  Future<({String path, String fileName})> exportZip() async {
     final zipService = ref.read(checklistZipServiceProvider);
     return zipService.generateZip(_checklistId);
   }

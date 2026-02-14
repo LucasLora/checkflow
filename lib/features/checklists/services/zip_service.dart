@@ -17,7 +17,7 @@ class ChecklistZipService {
     required this.itemRepository,
   });
 
-  Future<String> generateZip(int checklistId) async {
+  Future<({String path, String fileName})> generateZip(int checklistId) async {
     final checklist = await checklistRepository.getById(checklistId);
     final items = await itemRepository.getItemsWithPhotosByChecklist(
       checklistId,
@@ -79,15 +79,17 @@ class ChecklistZipService {
 
     final zipData = ZipEncoder().encode(archive);
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getTemporaryDirectory();
 
     final safeTitle = checklist.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
 
-    final zipPath = p.join(directory.path, '$safeTitle.zip');
+    final safeTitleWithExtension = '$safeTitle.zip';
+
+    final zipPath = p.join(directory.path, safeTitleWithExtension);
 
     final zipFile = File(zipPath);
     await zipFile.writeAsBytes(zipData);
 
-    return zipPath;
+    return (path: zipPath, fileName: safeTitleWithExtension);
   }
 }
