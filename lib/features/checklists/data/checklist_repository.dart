@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:checkflow/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 
@@ -49,6 +51,18 @@ class ChecklistRepository {
   }
 
   Future<void> delete(int checklistId) async {
+    final photos =
+        await (db.select(db.photos)..where(
+              (tbl) => tbl.itemId.isInQuery(
+                db.selectOnly(db.items)
+                  ..addColumns([db.items.id])
+                  ..where(db.items.checklistId.equals(checklistId)),
+              ),
+            ))
+            .get();
+
+    final photoPaths = photos.map((p) => p.path).toList();
+
     await db.transaction(() async {
       await (db.delete(db.photos)..where(
             (tbl) => tbl.itemId.isInQuery(
@@ -67,5 +81,12 @@ class ChecklistRepository {
         db.checklists,
       )..where((tbl) => tbl.id.equals(checklistId))).go();
     });
+
+    for (final path in photoPaths) {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
   }
 }
