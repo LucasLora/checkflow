@@ -2,6 +2,7 @@ import 'package:checkflow/core/database/app_database.dart';
 import 'package:checkflow/core/di/database_provider.dart';
 import 'package:checkflow/features/checklists/data/checklist_repository.dart';
 import 'package:checkflow/features/checklists/data/item_repository.dart';
+import 'package:checkflow/features/checklists/services/zip_service.dart';
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,18 +23,29 @@ final checklistDetailProvider = AsyncNotifierProvider.autoDispose
       ChecklistDetailNotifier.new,
     );
 
+final checklistZipServiceProvider = Provider<ChecklistZipService>((ref) {
+  return ChecklistZipService(
+    checklistRepository: ref.read(checklistRepositoryProvider),
+    itemRepository: ref.read(itemRepositoryProvider),
+  );
+});
+
 class ChecklistDetailNotifier
     extends AutoDisposeFamilyAsyncNotifier<ChecklistDetailState, int> {
   late ChecklistRepository _checklistRepository;
   late ItemRepository _itemRepository;
+  late int _checklistId;
 
   @override
   Future<ChecklistDetailState> build(int checklistId) async {
+    _checklistId = checklistId;
     _checklistRepository = ref.read(checklistRepositoryProvider);
     _itemRepository = ref.read(itemRepositoryProvider);
 
-    final checklist = await _checklistRepository.getById(checklistId);
-    final items = await _itemRepository.getItemsByChecklist(checklistId);
+    final checklist = await _checklistRepository.getById(_checklistId);
+    final items = await _itemRepository.getItemsWithStatusByChecklist(
+      _checklistId,
+    );
 
     return ChecklistDetailState(checklist: checklist, items: items);
   }
@@ -59,5 +71,10 @@ class ChecklistDetailNotifier
     if (checklistId == null) return;
 
     await _checklistRepository.delete(checklistId);
+  }
+
+  Future<String> exportZip() async {
+    final zipService = ref.read(checklistZipServiceProvider);
+    return zipService.generateZip(_checklistId);
   }
 }
