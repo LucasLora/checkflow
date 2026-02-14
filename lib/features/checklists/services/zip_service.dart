@@ -79,7 +79,7 @@ class ChecklistZipService {
 
     final zipData = ZipEncoder().encode(archive);
 
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await getTemporaryDirectory();
 
     final safeTitle = checklist.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
 

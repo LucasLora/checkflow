@@ -4,6 +4,7 @@ import 'package:checkflow/features/checklists/state/checklist_detail_notifier.da
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ChecklistDetailPage extends ConsumerStatefulWidget {
   const ChecklistDetailPage({required this.checklistId, super.key});
@@ -131,14 +132,12 @@ class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
           .read(checklistDetailProvider(checklist.id).notifier)
           .exportZip();
 
-      await Future.delayed(const Duration(seconds: 5));
-
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('ZIP salvo em:\n$path'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
+      await SharePlus.instance.share(
+        ShareParams(
+          text: 'Checklist exportado - ${checklist.title}',
+          files: [XFile(path)],
         ),
       );
     } catch (e) {
