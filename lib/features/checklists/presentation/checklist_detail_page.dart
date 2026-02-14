@@ -3,6 +3,7 @@ import 'package:checkflow/features/checklists/presentation/item_photos_page.dart
 import 'package:checkflow/features/checklists/state/checklist_detail_notifier.dart';
 import 'package:checkflow/features/checklists/state/checklist_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChecklistDetailPage extends ConsumerStatefulWidget {
@@ -127,20 +128,29 @@ class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
     setState(() => _isExporting = true);
 
     try {
-      final path = await ref
+      final resultExportZip = await ref
           .read(checklistDetailProvider(checklist.id).notifier)
           .exportZip();
 
-      await Future.delayed(const Duration(seconds: 5));
+      if (!mounted) return;
+
+      final result = await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: resultExportZip.path,
+          fileName: resultExportZip.fileName,
+        ),
+      );
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('ZIP salvo em:\n$path'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-      );
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Arquivo salvo com sucesso'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
