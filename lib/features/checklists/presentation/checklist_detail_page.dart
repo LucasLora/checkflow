@@ -24,7 +24,7 @@ class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
     final state = ref.watch(checklistDetailProvider(widget.checklistId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Checklist')),
+      appBar: AppBar(title: const Text('Detalhes do Checklist')),
       body: Stack(
         children: [
           state.when(
@@ -98,7 +98,7 @@ class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
     if (newTitle != null && newTitle.isNotEmpty) {
       await ref
           .read(checklistDetailProvider(checklist.id).notifier)
-          .updateTitle(newTitle);
+          .updateChecklistTitle(newTitle);
 
       ref
           .read(checklistListProvider.notifier)
@@ -107,7 +107,7 @@ class _ChecklistDetailPageState extends ConsumerState<ChecklistDetailPage> {
   }
 
   Future<void> _handleDelete(Checklist checklist) async {
-    final confirm = await _showDeleteConfirmationDialog(context);
+    final confirm = await _showDeleteChecklistConfirmationDialog(context);
 
     if (confirm != true) return;
 
@@ -197,19 +197,19 @@ class _ChecklistHeader extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              OutlinedButton.icon(
+              ElevatedButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit),
                 label: const Text('Editar'),
               ),
               const SizedBox(width: 8),
-              OutlinedButton.icon(
+              ElevatedButton.icon(
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete),
                 label: const Text('Excluir'),
               ),
               const SizedBox(width: 8),
-              OutlinedButton.icon(
+              ElevatedButton.icon(
                 onPressed: onExport,
                 icon: const Icon(Icons.archive),
                 label: const Text('ZIP'),
@@ -232,7 +232,7 @@ Future<String?> _showEditChecklistDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Editar checklist'),
+        title: const Text('Editar Checklist'),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -262,12 +262,12 @@ Future<String?> _showEditChecklistDialog(
   );
 }
 
-Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
+Future<bool?> _showDeleteChecklistConfirmationDialog(BuildContext context) {
   return showDialog<bool>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Excluir checklist'),
+        title: const Text('Excluir Checklist'),
         content: const Text(
           'Tem certeza que deseja excluir este checklist?\n'
           'Essa ação não pode ser desfeita.',

@@ -1,10 +1,12 @@
 import 'package:checkflow/core/database/app_database.dart';
+import 'package:checkflow/core/services/file_storage_service.dart';
 import 'package:drift/drift.dart';
 
 class ChecklistRepository {
-  ChecklistRepository(this.db);
+  ChecklistRepository(this.db, this.storage);
 
   final AppDatabase db;
+  final FileStorageService storage;
 
   Future<List<Checklist>> getAll() {
     return (db.select(
@@ -49,23 +51,21 @@ class ChecklistRepository {
   }
 
   Future<void> delete(int checklistId) async {
-    await db.transaction(() async {
-      await (db.delete(db.photos)..where(
-            (tbl) => tbl.itemId.isInQuery(
-              db.selectOnly(db.items)
-                ..addColumns([db.items.id])
-                ..where(db.items.checklistId.equals(checklistId)),
-            ),
-          ))
-          .go();
+    final photos =
+        await (db.select(db.photos).join([
+              innerJoin(db.items, db.items.id.equalsExp(db.photos.itemId)),
+            ])..where(db.items.checklistId.equals(checklistId)))
+            .map((row) => row.readTable(db.photos))
+            .get();
 
-      await (db.delete(
-        db.items,
-      )..where((tbl) => tbl.checklistId.equals(checklistId))).go();
+    final photosPaths = photos.map((p) => p.path).toList();
 
-      await (db.delete(
-        db.checklists,
-      )..where((tbl) => tbl.id.equals(checklistId))).go();
-    });
+    await (db.delete(
+      db.checklists,
+    )..where((tbl) => tbl.id.equals(checklistId))).go();
+
+    for (final photoPath in photosPaths) {
+      await storage.deleteFile(photoPath);
+    }
   }
 }
