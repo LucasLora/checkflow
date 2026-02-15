@@ -19,7 +19,7 @@ class ChecklistZipService {
 
   Future<({String path, String fileName})> generateZip(int checklistId) async {
     final checklist = await checklistRepository.getById(checklistId);
-    final items = await itemRepository.getItemsWithPhotosByChecklist(
+    final itemsWithPhotos = await itemRepository.getItemsWithPhotosByChecklist(
       checklistId,
     );
 
@@ -27,7 +27,7 @@ class ChecklistZipService {
 
     final List<Map<String, Object>> itemsMetadata = [];
 
-    for (final itemWithPhotos in items) {
+    for (final itemWithPhotos in itemsWithPhotos) {
       final item = itemWithPhotos.item;
       final photos = itemWithPhotos.photos;
 

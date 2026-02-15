@@ -27,7 +27,7 @@ class ItemPhotosPage extends ConsumerWidget {
         error: (error, _) => Center(child: Text('Erro: $error')),
         data: (photos) {
           if (photos.isEmpty) {
-            return const Center(child: Text('Nenhuma foto adicionada'));
+            return const Center(child: Text('Nenhuma foto encontrada'));
           }
 
           return GridView.builder(
@@ -47,8 +47,8 @@ class ItemPhotosPage extends ConsumerWidget {
                     child: Image.file(File(photo.path), fit: BoxFit.cover),
                   ),
                   Positioned(
-                    top: 4,
-                    right: 4,
+                    top: -10,
+                    right: -10,
                     child: IconButton(
                       icon: Icon(
                         Icons.delete,
@@ -58,6 +58,7 @@ class ItemPhotosPage extends ConsumerWidget {
                         final confirm = await showDeletePhotoConfirmationDialog(
                           context,
                         );
+
                         if (confirm != true) return;
 
                         await ref
@@ -86,6 +87,7 @@ class ItemPhotosPage extends ConsumerWidget {
               final imageService = ref.read(imageServiceProvider);
 
               final path = await imageService.takePhoto();
+
               if (path == null) return;
 
               await ref
@@ -106,6 +108,7 @@ class ItemPhotosPage extends ConsumerWidget {
               final imageService = ref.read(imageServiceProvider);
 
               final path = await imageService.pickFromGallery();
+
               if (path == null) return;
 
               await ref
@@ -130,7 +133,7 @@ Future<bool?> showDeletePhotoConfirmationDialog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Excluir foto'),
+        title: const Text('Excluir Foto'),
         content: const Text(
           'Tem certeza que deseja excluir esta foto?\n'
           'Essa ação não pode ser desfeita.',

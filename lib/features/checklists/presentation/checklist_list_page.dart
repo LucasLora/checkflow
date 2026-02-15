@@ -72,7 +72,7 @@ Future<String?> _showCreateChecklistDialog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Criar checklist'),
+        title: const Text('Criar Checklist'),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -80,6 +80,7 @@ Future<String?> _showCreateChecklistDialog(BuildContext context) {
             border: OutlineInputBorder(),
           ),
           maxLength: 40,
+          autofocus: true,
         ),
         actions: [
           TextButton(
