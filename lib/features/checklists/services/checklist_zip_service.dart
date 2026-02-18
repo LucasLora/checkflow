@@ -48,7 +48,7 @@ class ChecklistZipService {
           'fileName': fileName,
           'path': entryName,
           'attachedAt': photo.attachedAt.toIso8601String(),
-          'missing': !exists,
+          'wasMissingOnExport': !exists,
         });
 
         if (exists) {
